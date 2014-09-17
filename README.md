@@ -42,3 +42,6 @@ Future Releases
 - Ability to auto-size all segments besed upon content, currently all segments are sized the same regardless of if the contents
   fit or not.
 - The ability to define SPECIFIC sizes for each segment
+- Ability to have a multi-row or multi-columm control (for segment sets that are too large to fit on a single row or column
+  when contents have been added)
+  added
