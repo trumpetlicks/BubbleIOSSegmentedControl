@@ -304,7 +304,11 @@
 -(void)setSelectedSegmentIndex:(unsigned int)selectedSegmentIndex{
     if( NO == allowsMultipleSelection ){
         _selectedSegmentIndex = selectedSegmentIndex;
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:_selectedSegmentIndex]) setSelected:YES];
+        
+        for(unsigned int index = 0; index < self.buttonArray.count; index++){
+            if( index == _selectedSegmentIndex ) [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:index]) setSelected:YES];
+            else                                 [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:index]) setSelected:NO];
+        }
     }
 }
 
