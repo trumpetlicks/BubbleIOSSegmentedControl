@@ -24,6 +24,10 @@ the easiest way is:
   - put a standard UIView on whatever view you wish to have the switch on, within your xib file.
   - define that newly placed UIView as a "BubbleIOSSegmentedControl" within the xib file.
   - the UIView should be sized no smaller than 30 px high (it can be larger, but look at the drawing note above) and any width.
+  - In your viewDidLoad routine for the encapsulating UIViewController, utilize the setupWithNamesArray routine:
+    (ex. [yourSegmentControl setupWithNamesArray:@[@"segment 1", @"segment 2", @"segment 3"]];)
+  - If you want to underline a letter (as I was using it for):
+    (ex. [yourSegmentControl underlineFirstOccuranceOfChar:'s' forSegment:0];)
   
 Version History
 =================
