@@ -41,3 +41,4 @@ Future Releases
 - Ability to add images to each segment
 - Ability to auto-size all segments besed upon content, currently all segments are sized the same regardless of if the contents
   fit or not.
+- The ability to define SPECIFIC sizes for each segment
