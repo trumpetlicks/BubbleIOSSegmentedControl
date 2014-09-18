@@ -8,33 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum __segmentType{
-    SEGMENT_LEFT,
-    SEGMENT_MIDDLE,
-    SEGMENT_RIGHT
-} segmentType;
-
-
-/*
- *
- */
-@interface BubbleIOSSegmentButton : UIButton{
-    segmentType myType;
-    
-    @private
-    unsigned int cornerRadius;
-}
-
-//@property (nonatomic) BOOL isSelected;
-@property (nonatomic)         BOOL      autoCalculateWidth;
-@property (nonatomic, retain) UIColor * tintColor;
-
-//
--(void)setSegmentType:(segmentType)aType;
-
-@end
-
-
 
 /*
  *

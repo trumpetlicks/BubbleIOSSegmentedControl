@@ -8,57 +8,92 @@
 
 #import "BubbleIOSSegmentedControl.h"
 
+#pragma mark -
+#pragma mark Custom Macro Constants
+#define MODULE_REVISION_STRING  @"1.0.02"
+
+#pragma mark -
+#pragma mark Custom Functional Macros
+#define DEG_TO_RADIANS(x) (((float)(x) * 3.141592654f) / 180.0f)
+
+/*
+ *
+ */
+typedef enum __segmentType{
+    SEGMENT_LEFT,
+    SEGMENT_MIDDLE,
+    SEGMENT_RIGHT
+} segmentType;
+
+
+/*
+ *
+ */
+#pragma mark -
+#pragma mark BubbleIOSSegmentButton Private Interface
+@interface BubbleIOSSegmentButton : UIButton{
+    segmentType myType;
+    
+@private
+    unsigned int cornerRadius;
+}
+
+//@property (nonatomic) BOOL isSelected;
+@property (nonatomic)         BOOL      autoCalculateWidth;
+@property (nonatomic, retain) UIColor * tintColor;
+
+//
+-(void)setSegmentType:(segmentType)aType;
+
+@end
+
+/*
+ *
+ */
+#pragma mark -
+#pragma mark BubbleIOSSegmentButton Implementation
 @implementation BubbleIOSSegmentButton
 
 @synthesize tintColor;
 
+#pragma mark -
+#pragma mark BubbleIOSSegmentButton Custom Initilization
+-(void)initializeSegmentButton{
+    self.opaque = NO;
+    self.backgroundColor = [UIColor clearColor];
+    [self setSelected:NO];
+    
+    myType = SEGMENT_LEFT;
+    self.autoCalculateWidth = YES;
+    
+    cornerRadius = 6;
+}
+
+#pragma mark -
+#pragma mark BubbleIOSSegmentButton  Overridden Initialization
 -(id)init{
-    
-    if( self = [super init] ){
-        self.opaque = NO;
-        self.backgroundColor = [UIColor clearColor];
-        [self setSelected:NO];
-    
-        myType = SEGMENT_LEFT;
-        self.autoCalculateWidth = YES;
-    
-        cornerRadius = 6;
-    }
+    if( self = [super init] ) [self initializeSegmentButton];
     return self;
 }
 
 -(id)initWithFrame:(CGRect)frame{
-    if( self = [super initWithFrame:frame] ){
-        self.opaque = NO;
-        self.backgroundColor = [UIColor clearColor];
-        [self setSelected:NO];
-        
-        myType = SEGMENT_LEFT;
-        self.autoCalculateWidth = YES;
-        
-        cornerRadius = 6;
-    }
+    if( self = [super initWithFrame:frame] ) [self initializeSegmentButton];
     return self;
 }
 
 -(id)initWithCoder:(NSCoder *)aDecoder{
-    if ((self = [super initWithCoder:aDecoder])) {
-        self.opaque = NO;
-        self.backgroundColor = [UIColor clearColor];
-        [self setSelected:NO];
-        
-        myType = SEGMENT_LEFT;
-        self.autoCalculateWidth = YES;
-        
-        cornerRadius = 6;
-    }
+    if ((self = [super initWithCoder:aDecoder])) [self initializeSegmentButton];
     return self;
 }
 
+#pragma mark -
+#pragma mark BubbleIOSegmentButton Overridden routine for setting the button selected
 -(void)setIsSelected:(BOOL)isSelected{
     [self setIsSelected:isSelected];
 }
 
+#pragma mark - 
+#pragma mark BubbleIOSegmentButton Type Setup (left, middle, right)
 -(void)setSegmentType:(segmentType)aType{
     myType = aType;
     [self setNeedsDisplay];
@@ -69,8 +104,8 @@
     [self setNeedsDisplay];
 }
 
-#define DEG_TO_RADIANS(x) (((float)(x) * 3.141592654f) / 180.0f)
-
+#pragma mark -
+#pragma mark BubbleIOSegmentButton Custom Drawing
 -(void)drawRect:(CGRect)rect{
     
     CGContextRef ctx   = UIGraphicsGetCurrentContext();
