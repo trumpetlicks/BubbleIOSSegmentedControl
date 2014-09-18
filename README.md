@@ -31,7 +31,8 @@ the easiest way is:
   
 Version History
 =================
-v1.0 - initial upload
+v1.01 - Support for UISegmentedControlNoSegment constant when using setSelectedSegmentIndex 
+v1.0  - initial upload
 
 Future Releases
 =================
