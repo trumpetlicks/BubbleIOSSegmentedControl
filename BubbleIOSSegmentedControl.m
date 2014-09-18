@@ -55,6 +55,10 @@
     return self;
 }
 
+-(void)setIsSelected:(BOOL)isSelected{
+    [self setIsSelected:isSelected];
+}
+
 -(void)setSegmentType:(segmentType)aType{
     myType = aType;
     [self setNeedsDisplay];
@@ -264,46 +268,87 @@
 @end
 
 
+/*
+ *
+ */
+#pragma mark -
+#pragma mark BubbleIOSSegmentedControl Private Interface
+@interface BubbleIOSSegmentedControl ()
+
+@property unsigned short totalSelectedSegments;
+
+@end
+
 
 /*
  *
  */
+#pragma mark -
+#pragma mark BubbleIOSSegmentedControl Implementation
 @implementation BubbleIOSSegmentedControl
 
-@synthesize buttonArray;
-@synthesize allowsMultipleSelection;
-@synthesize allowsNullSelection;
-@synthesize selectedSegmentIndex = _selectedSegmentIndex;
-@synthesize tintColor            = _tintColor;
+@synthesize buttonArray             = _buttonArray;
+@synthesize allowsMultipleSelection = _allowsMultipleSelection;
+@synthesize allowsNullSelection     = _allowsNullSelection;
+@synthesize selectedSegmentIndex    = _selectedSegmentIndex;
+@synthesize tintColor               = _tintColor;
+
+@synthesize totalSelectedSegments   = _totalSelectedSegments;
+
+#pragma mark -
+#pragma mark BubbleIOSSegmentedControl Custom Initialization
+-(void)initializeSegmentedControlDefaults{
+    // Setup Default parameters, Blue Font and Outline, see through backing
+    self.opaque              = NO;
+    self.backgroundColor     = [UIColor clearColor];
+    _tintColor               = [UIColor colorWithRed:0.0 green:124.0 / 255.0 blue:1.0 alpha:1.0];
+    _allowsMultipleSelection = NO;
+    _allowsNullSelection     = YES;
+    
+    _totalSelectedSegments   = 0;
+}
+
+#pragma mark -
+#pragma mark BubbleIOSSegmentedControl Overridden Initialization
+-(id)init{
+    if( self = [super init] ) [self initializeSegmentedControlDefaults];
+    return self;
+}
 
 -(id)initWithCoder:(NSCoder *)aDecoder{
-    if ((self = [super initWithCoder:aDecoder])) {
-        
-        // Setup Default parameters, Blue Font and Outline, see through backing
-        self.opaque                  = NO;
-        self.backgroundColor         = [UIColor clearColor];
-        _tintColor                   = [UIColor colorWithRed:0.0 green:124.0 / 255.0 blue:1.0 alpha:1.0];
-        self.allowsMultipleSelection = NO;
-        
-    }
+    if( self = [super initWithCoder:aDecoder] ) [self initializeSegmentedControlDefaults];
     return self;
 }
 
 - (id)initWithFrame:(CGRect)frame{
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.opaque                  = NO;
-        self.backgroundColor         = [UIColor clearColor];
-        _tintColor                   = [UIColor colorWithRed:0.0 green:124.0 / 255.0 blue:1.0 alpha:1.0];
-        self.allowsMultipleSelection = NO;
-    }
+    if( self  = [super initWithFrame:frame] ) [self initializeSegmentedControlDefaults];
     return self;
 }
 
-
--(void)setSelectedSegmentIndex:(unsigned int)selectedSegmentIndex{
-    if( NO == allowsMultipleSelection ){
-        _selectedSegmentIndex = selectedSegmentIndex;
+#pragma mark -
+#pragma mark Programmatic Segment Selection
+-(void)setSelectedSegmentIndex:(int)selectedSegmentIndex{
+    if( NO == _allowsMultipleSelection ){
+        
+        if( selectedSegmentIndex < 0 ){             // "selectedSegmentIndex < 0" is essentially UISegmentedControlNoSegment
+            if( YES == _allowsNullSelection ){      // if we allow null selection, deselect all segments, else leave the currently selected segment alone
+                _selectedSegmentIndex  = UISegmentedControlNoSegment;
+                _totalSelectedSegments = 0;
+            }
+        }else{
+            if( selectedSegmentIndex > ( _buttonArray.count - 1 ) ){
+                if( YES == _allowsNullSelection ){  // The control allows for NULL selection
+                    _selectedSegmentIndex  = UISegmentedControlNoSegment;
+                    _totalSelectedSegments = 0;
+                }else{                              // The control does NOT allow for NULL selection
+                    selectedSegmentIndex   = _buttonArray.count - 1;
+                    _totalSelectedSegments = 1;
+                }
+            }else{  // The attempted selection is within range
+                _selectedSegmentIndex  = selectedSegmentIndex;
+                _totalSelectedSegments = 1;
+            }
+        }
         
         for(unsigned int index = 0; index < self.buttonArray.count; index++){
             if( index == _selectedSegmentIndex ) [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:index]) setSelected:YES];
@@ -312,6 +357,65 @@
     }
 }
 
+-(void)selectSegment:(unsigned int)segment{
+    if( _totalSelectedSegments < 1 ){
+        if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == NO ){
+            [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
+            _totalSelectedSegments = 1;
+        }
+    }else{
+        if( YES == _allowsMultipleSelection )   // Only allow the NEW selection IFF we are in allow multiple selection mode
+            if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == NO ){
+                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
+                _totalSelectedSegments++;
+            }
+    }
+}
+
+-(void)deSelectSegment:(unsigned int)segment{
+    if( _totalSelectedSegments > 1 ){
+        if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == YES ){
+            [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
+            _totalSelectedSegments--;
+        }
+    }else{
+        if( YES == _allowsNullSelection ){
+            if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == YES ){
+                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
+                _totalSelectedSegments--;
+            }
+        }
+    }
+}
+
+-(void)selectAllSegments{
+    if( YES == _allowsMultipleSelection ) _totalSelectedSegments = _buttonArray.count;
+    else                                  _totalSelectedSegments = 1;
+    
+    for(unsigned short segment = 0; segment < _totalSelectedSegments; segment++)
+        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
+}
+
+-(void)deselectAllSegments{
+    if( YES == _allowsNullSelection ) _totalSelectedSegments = 0;
+    else                              _totalSelectedSegments = 1;
+    
+    for(unsigned short segment = _totalSelectedSegments; segment < _buttonArray.count; segment++)
+        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
+}
+
+-(void)emulateTouchOnSegment:(unsigned int)segment{
+    
+    // Ensure the user is asking to emulate a touch on a segment that exists
+    if( segment < _buttonArray.count ){
+        if( NO == ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected ) [self selectSegment:  segment];
+        else                                                                                         [self deSelectSegment:segment];
+    }// END --> if(segment < buttonArray.count)
+    
+}
+
+#pragma mark -
+#pragma mark BubbleIOSSegmentedControl Segment Setup Routines
 -(void)setupWithNamesArray:(NSArray *)namesArray{
     
     if( nil != namesArray && namesArray.count > 0){
@@ -392,9 +496,8 @@
     
 } // END --> -(void)initWithNamesArray:(NSArray *)namesArray
 
-
--(void)setAllowsMultipleSelection:(BOOL)inAllowsMultipleSelection{
-    allowsMultipleSelection = inAllowsMultipleSelection;
+-(void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection{
+    _allowsMultipleSelection = allowsMultipleSelection;
 }
 
 
@@ -419,37 +522,14 @@
     
 }
 
--(void)selectSegment:(unsigned int)segment{
-    
-    if( segment < self.buttonArray.count ) [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
-    
-}
-
--(void)deSelectSegment:(unsigned int)segment{
-    if( segment < self.buttonArray.count ) [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
-}
-
--(void)selectAllSegments{
-    
-}
-
--(void)deselectAllSegments{
-    
-}
-
--(void)emulateTouchOnSegment:(unsigned int)segment{
-    
-    if(segment < buttonArray.count){
-        if( YES == self.allowsMultipleSelection ){
-            [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:![((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) isSelected]];
-        }else{
-            for(unsigned int i = 0; i < self.buttonArray.count; i++){
-                if( i == segment ) [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:i]) setSelected:YES];
-                else               [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:i]) setSelected:NO];
-            } // END --> for(unsigned int i = 0; i < self.buttonArray.count; i++) <--
-        } // if( YES == allowsMultipleSelection ) <--
-    }// END --> if(segment < buttonArray.count)
-    
+#pragma mark -
+#pragma mark BubbleIOSSegmentedControl High Level Control Parameter Setup
+-(void)setAllowsNullSelection:(BOOL)allowsNullSelection{
+    if( NO == allowsNullSelection ){
+        
+    }else{
+        _allowsNullSelection = allowsNullSelection;
+    }
 }
 
 -(BOOL)isSegmentSelected:(unsigned int)segment{

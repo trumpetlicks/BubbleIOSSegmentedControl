@@ -47,7 +47,7 @@ typedef enum __segmentType{
 }
 
 @property (nonatomic, retain) NSMutableArray * buttonArray;
-@property (nonatomic)         unsigned int     selectedSegmentIndex;
+@property (nonatomic)         int              selectedSegmentIndex;
 @property (nonatomic)         BOOL             allowsMultipleSelection;
 @property (nonatomic)         BOOL             allowsNullSelection;
 
