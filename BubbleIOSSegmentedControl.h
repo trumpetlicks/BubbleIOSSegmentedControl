@@ -49,14 +49,19 @@ typedef enum __SegmentAutoSizingMode{
 @property (nonatomic, retain) UIColor * unSelectedOutlineColor;
 @property (nonatomic, retain) UIColor * selectedOutlineColor;
 
+// main setup routines
 -(void)setupWithSpaceForN:(unsigned int)segments;
 -(void)setupWithNamesArray:(NSArray *)namesArray;
 -(void)setupWithParamsDictionary:(NSDictionary *)paramsDict;
 
+// Post setup parameter modification
 -(void)setAutoSizingMode:(SegmentAutoSizingMode)autoSizeMode;               // This routine will NOT reset any statically sized segments the user has set
 -(void)setStaticSize:(unsigned int)size forSegment:(unsigned int)segment;   // This allows the user to set a static size for particular segments
 -(void)setUseAutoSizingForSegment:(unsigned int)segment;                    // Essentially resets any static sizing of a segment and forces the segment to use the current auto sizing mode
 -(void)setAllSegmentsUseAutoSizing;                                         // Resets all segments to use the current auto sizing mode
+
+// Text Property Manipulation
+-(void)underlineFirstOccuranceOfChar:(char)inChar forSegment:(unsigned int)segment;
 
 // Insertion and removal of segments
 -(void)insertSegmentsWithNames:(NSArray *) namesArray atIndex:(int)segment; // 0 places before front, - values place at end, other values place within
@@ -73,9 +78,7 @@ typedef enum __SegmentAutoSizingMode{
 -(void)deselectAllSegments;
 -(void)emulateTouchOnSegment:(unsigned int)segment;
 
-
+//  Segment selection querying
 -(BOOL)isSegmentSelected:(unsigned int)segment;
-
--(void)underlineFirstOccuranceOfChar:(char)inChar forSegment:(unsigned int)segment;
 
 @end
