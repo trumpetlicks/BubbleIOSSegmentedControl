@@ -10,7 +10,9 @@
 
 #pragma mark -
 #pragma mark Custom Macro Constants
-#define MODULE_REVISION_STRING  @"1.0.02"
+#define MODULE_REVISION_STRING                  @"1.0.03"
+
+#define BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS 6.0
 
 #pragma mark -
 #pragma mark Custom Functional Macros
@@ -19,11 +21,12 @@
 /*
  *
  */
-typedef enum __segmentType{
+typedef enum __BubbleIOButtonSegmentType{
     SEGMENT_LEFT,
     SEGMENT_MIDDLE,
-    SEGMENT_RIGHT
-} segmentType;
+    SEGMENT_RIGHT,
+    SEGMENT_ONLY    // Use this if there is only a single segment, it will round both sides of the button
+} BubbleIOButtonSegmentType;
 
 
 /*
@@ -31,19 +34,16 @@ typedef enum __segmentType{
  */
 #pragma mark -
 #pragma mark BubbleIOSSegmentButton Private Interface
-@interface BubbleIOSSegmentButton : UIButton{
-    segmentType myType;
-    
-@private
-    unsigned int cornerRadius;
-}
+@interface BubbleIOSSegmentButton : UIButton
 
 //@property (nonatomic) BOOL isSelected;
-@property (nonatomic)         BOOL      autoCalculateWidth;
-@property (nonatomic, retain) UIColor * tintColor;
+@property (getter = getSegmentType, setter = setSegmentType:) BubbleIOButtonSegmentType segmentType;
+@property (nonatomic)                                         BOOL                      isStaticSize;
+@property (nonatomic, retain)                                 UIColor *                 tintColor;
 
 //
--(void)setSegmentType:(segmentType)aType;
+-(BubbleIOButtonSegmentType)getSegmentType;
+-(void)setSegmentType:(BubbleIOButtonSegmentType)segmentType;
 
 @end
 
@@ -54,7 +54,9 @@ typedef enum __segmentType{
 #pragma mark BubbleIOSSegmentButton Implementation
 @implementation BubbleIOSSegmentButton
 
-@synthesize tintColor;
+@synthesize segmentType  = _segmentType;
+@synthesize isStaticSize = _isStaticSize;
+@synthesize tintColor    = _tintColor;
 
 #pragma mark -
 #pragma mark BubbleIOSSegmentButton Custom Initilization
@@ -63,10 +65,8 @@ typedef enum __segmentType{
     self.backgroundColor = [UIColor clearColor];
     [self setSelected:NO];
     
-    myType = SEGMENT_LEFT;
-    self.autoCalculateWidth = YES;
-    
-    cornerRadius = 6;
+    _segmentType = SEGMENT_LEFT;
+    _isStaticSize = NO;
 }
 
 #pragma mark -
@@ -89,13 +89,17 @@ typedef enum __segmentType{
 #pragma mark -
 #pragma mark BubbleIOSegmentButton Overridden routine for setting the button selected
 -(void)setIsSelected:(BOOL)isSelected{
-    [self setIsSelected:isSelected];
+    [self setSelected:isSelected];
 }
 
 #pragma mark - 
 #pragma mark BubbleIOSegmentButton Type Setup (left, middle, right)
--(void)setSegmentType:(segmentType)aType{
-    myType = aType;
+-(BubbleIOButtonSegmentType)getSegmentType{
+    return _segmentType;
+}
+
+-(void)setSegmentType:(BubbleIOButtonSegmentType)segmentType{
+    _segmentType = segmentType;
     [self setNeedsDisplay];
 }
 
@@ -115,15 +119,15 @@ typedef enum __segmentType{
     
     if( YES == self.isSelected ){
         
-        CGContextSetFillColorWithColor(ctx, self.tintColor.CGColor);
-        CGContextSetStrokeColorWithColor(ctx, self.tintColor.CGColor);
+        CGContextSetFillColorWithColor(ctx, _tintColor.CGColor);
+        CGContextSetStrokeColorWithColor(ctx, _tintColor.CGColor);
         
-        switch (myType) {
+        switch (_segmentType) {
             case SEGMENT_LEFT:{
                 CGMutablePathRef path = CGPathCreateMutable();
                 CGPathMoveToPoint(path, nil, frame.size.width / 2, 0);
-                CGPathAddArc(path, nil, cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(270), DEG_TO_RADIANS(180), 1);
-                CGPathAddArc(path, nil, cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(180), DEG_TO_RADIANS(90), 1);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(270), DEG_TO_RADIANS(180), 1);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(180), DEG_TO_RADIANS(90), 1);
                 CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height);
                 CGPathAddLineToPoint(path, nil, frame.size.width, 0);
                 //CGPathAddLineToPoint(path, nil, cornerRadius, 0);
@@ -134,10 +138,10 @@ typedef enum __segmentType{
                 // Draw the rounded corners on the left
                 CGPathRelease(path);
                 path = CGPathCreateMutable();
-                CGPathMoveToPoint(path, nil, cornerRadius, 0);
-                CGPathAddArc(path, nil, cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(275), DEG_TO_RADIANS(175), 1);
-                CGPathMoveToPoint(path, nil, 0, frame.size.height - cornerRadius);
-                CGPathAddArc(path, nil, cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(175), DEG_TO_RADIANS(85), 1);
+                CGPathMoveToPoint(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, 0);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(275), DEG_TO_RADIANS(175), 1);
+                CGPathMoveToPoint(path, nil, 0, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(175), DEG_TO_RADIANS(85), 1);
                 CGContextSetLineWidth(ctx, 1.15);
                 CGContextAddPath(ctx, path);
                 CGContextStrokePath(ctx);
@@ -145,12 +149,12 @@ typedef enum __segmentType{
                 // Draw the straight line paths
                 CGPathRelease(path);
                 path = CGPathCreateMutable();
-                CGPathMoveToPoint(path, nil, 0, cornerRadius - 2);
-                CGPathAddLineToPoint(path, nil, 0, frame.size.height - cornerRadius + 2);
-                CGPathMoveToPoint(path, nil, cornerRadius - 2, frame.size.height);
+                CGPathMoveToPoint(path, nil, 0, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2);
+                CGPathAddLineToPoint(path, nil, 0, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2);
+                CGPathMoveToPoint(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2, frame.size.height);
                 CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height);
                 CGPathAddLineToPoint(path, nil, frame.size.width, 0);
-                CGPathAddLineToPoint(path, nil, cornerRadius - 2, 0);
+                CGPathAddLineToPoint(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2, 0);
                 CGContextSetLineWidth(ctx, 2.0);
                 CGContextAddPath(ctx, path);
                 CGContextStrokePath(ctx);
@@ -159,8 +163,8 @@ typedef enum __segmentType{
             case SEGMENT_RIGHT:{
                 CGMutablePathRef path = CGPathCreateMutable();
                 CGPathMoveToPoint(path, nil, frame.size.width / 2, 0);
-                CGPathAddArc(path, nil, frame.size.width - cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(270), DEG_TO_RADIANS(0), 0);
-                CGPathAddArc(path, nil, frame.size.width - cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(0), DEG_TO_RADIANS(90), 0);
+                CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(270), DEG_TO_RADIANS(0), 0);
+                CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(0), DEG_TO_RADIANS(90), 0);
                 CGPathAddLineToPoint(path, nil, 0, frame.size.height);
                 CGPathAddLineToPoint(path, nil, 0, 0);
                 CGPathCloseSubpath(path);
@@ -170,10 +174,10 @@ typedef enum __segmentType{
                 // Draw the rounded corners on the left
                 CGPathRelease(path);
                 path = CGPathCreateMutable();
-                CGPathMoveToPoint(path, nil, frame.size.width - cornerRadius, 0);
-                CGPathAddArc(path, nil, frame.size.width - cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(265), DEG_TO_RADIANS(5), 0);
-                CGPathMoveToPoint(path, nil, frame.size.width, frame.size.height - cornerRadius);
-                CGPathAddArc(path, nil, frame.size.width - cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(355), DEG_TO_RADIANS(95), 0);
+                CGPathMoveToPoint(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, 0);
+                CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(265), DEG_TO_RADIANS(5), 0);
+                CGPathMoveToPoint(path, nil, frame.size.width, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS);
+                CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(355), DEG_TO_RADIANS(95), 0);
                 CGContextSetLineWidth(ctx, 1.15);
                 CGContextAddPath(ctx, path);
                 CGContextStrokePath(ctx);
@@ -181,12 +185,12 @@ typedef enum __segmentType{
                 // Draw the straight line paths
                 CGPathRelease(path);
                 path = CGPathCreateMutable();
-                CGPathMoveToPoint(path, nil, frame.size.width, cornerRadius - 2);
-                CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height - cornerRadius + 2);
-                CGPathMoveToPoint(path, nil, frame.size.width - cornerRadius + 2, frame.size.height);
+                CGPathMoveToPoint(path, nil, frame.size.width, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2);
+                CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2);
+                CGPathMoveToPoint(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2, frame.size.height);
                 CGPathAddLineToPoint(path, nil, 0, frame.size.height);
                 CGPathAddLineToPoint(path, nil, 0, 0);
-                CGPathAddLineToPoint(path, nil, frame.size.width - cornerRadius + 2, 0);
+                CGPathAddLineToPoint(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2, 0);
                 CGContextSetLineWidth(ctx, 2.0);
                 CGContextAddPath(ctx, path);
                 CGContextStrokePath(ctx);
@@ -206,18 +210,17 @@ typedef enum __segmentType{
         
     }else{
         
-        
-        if( self.isHighlighted ) CGContextSetFillColorWithColor(ctx, [self.tintColor colorWithAlphaComponent:0.15].CGColor);
+        if( self.isHighlighted ) CGContextSetFillColorWithColor(ctx, [_tintColor colorWithAlphaComponent:0.15].CGColor);
         else CGContextSetFillColorWithColor(ctx, self.backgroundColor.CGColor);
         
         CGContextSetStrokeColorWithColor(ctx, self.tintColor.CGColor);
         
-        switch (myType) {
+        switch (_segmentType) {
             case SEGMENT_LEFT:{
                 CGMutablePathRef path = CGPathCreateMutable();
                 CGPathMoveToPoint(path, nil, frame.size.width / 2, 0);
-                CGPathAddArc(path, nil, cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(270), DEG_TO_RADIANS(180), 1);
-                CGPathAddArc(path, nil, cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(180), DEG_TO_RADIANS(90), 1);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(270), DEG_TO_RADIANS(180), 1);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(180), DEG_TO_RADIANS(90), 1);
                 CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height);
                 CGPathAddLineToPoint(path, nil, frame.size.width, 0);
                 //CGPathAddLineToPoint(path, nil, cornerRadius, 0);
@@ -228,10 +231,10 @@ typedef enum __segmentType{
                 // Draw the rounded corners on the left
                 CGPathRelease(path);
                 path = CGPathCreateMutable();
-                CGPathMoveToPoint(path, nil, cornerRadius, 0);
-                CGPathAddArc(path, nil, cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(275), DEG_TO_RADIANS(175), 1);
-                CGPathMoveToPoint(path, nil, 0, frame.size.height - cornerRadius);
-                CGPathAddArc(path, nil, cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(175), DEG_TO_RADIANS(85), 1);
+                CGPathMoveToPoint(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, 0);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(275), DEG_TO_RADIANS(175), 1);
+                CGPathMoveToPoint(path, nil, 0, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS);
+                CGPathAddArc(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(175), DEG_TO_RADIANS(85), 1);
                 CGContextSetLineWidth(ctx, 1.15);
                 CGContextAddPath(ctx, path);
                 CGContextStrokePath(ctx);
@@ -239,12 +242,12 @@ typedef enum __segmentType{
                 // Draw the straight line paths
                 CGPathRelease(path);
                 path = CGPathCreateMutable();
-                CGPathMoveToPoint(path, nil, 0, cornerRadius - 2);
-                CGPathAddLineToPoint(path, nil, 0, frame.size.height - cornerRadius + 2);
-                CGPathMoveToPoint(path, nil, cornerRadius - 2, frame.size.height);
+                CGPathMoveToPoint(path, nil, 0, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2);
+                CGPathAddLineToPoint(path, nil, 0, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2);
+                CGPathMoveToPoint(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2, frame.size.height);
                 CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height);
                 CGPathAddLineToPoint(path, nil, frame.size.width, 0);
-                CGPathAddLineToPoint(path, nil, cornerRadius - 2, 0);
+                CGPathAddLineToPoint(path, nil, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2, 0);
                 CGContextSetLineWidth(ctx, 2.0);
                 CGContextAddPath(ctx, path);
                 CGContextStrokePath(ctx);
@@ -253,8 +256,8 @@ typedef enum __segmentType{
             case SEGMENT_RIGHT:{
                     CGMutablePathRef path = CGPathCreateMutable();
                     CGPathMoveToPoint(path, nil, frame.size.width / 2, 0);
-                    CGPathAddArc(path, nil, frame.size.width - cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(270), DEG_TO_RADIANS(0), 0);
-                    CGPathAddArc(path, nil, frame.size.width - cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(0), DEG_TO_RADIANS(90), 0);
+                    CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(270), DEG_TO_RADIANS(0), 0);
+                    CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(0), DEG_TO_RADIANS(90), 0);
                     CGPathAddLineToPoint(path, nil, 0, frame.size.height);
                     CGPathAddLineToPoint(path, nil, 0, 0);
                     CGPathCloseSubpath(path);
@@ -264,10 +267,10 @@ typedef enum __segmentType{
                     // Draw the rounded corners on the left
                     CGPathRelease(path);
                     path = CGPathCreateMutable();
-                    CGPathMoveToPoint(path, nil, frame.size.width - cornerRadius, 0);
-                    CGPathAddArc(path, nil, frame.size.width - cornerRadius, cornerRadius, cornerRadius, DEG_TO_RADIANS(265), DEG_TO_RADIANS(5), 0);
-                    CGPathMoveToPoint(path, nil, frame.size.width, frame.size.height - cornerRadius);
-                    CGPathAddArc(path, nil, frame.size.width - cornerRadius, frame.size.height - cornerRadius, cornerRadius, DEG_TO_RADIANS(355), DEG_TO_RADIANS(95), 0);
+                    CGPathMoveToPoint(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, 0);
+                    CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(265), DEG_TO_RADIANS(5), 0);
+                    CGPathMoveToPoint(path, nil, frame.size.width, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS);
+                    CGPathAddArc(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS, DEG_TO_RADIANS(355), DEG_TO_RADIANS(95), 0);
                     CGContextSetLineWidth(ctx, 1.15);
                     CGContextAddPath(ctx, path);
                     CGContextStrokePath(ctx);
@@ -275,12 +278,12 @@ typedef enum __segmentType{
                     // Draw the straight line paths
                     CGPathRelease(path);
                     path = CGPathCreateMutable();
-                    CGPathMoveToPoint(path, nil, frame.size.width, cornerRadius - 2);
-                    CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height - cornerRadius + 2);
-                    CGPathMoveToPoint(path, nil, frame.size.width - cornerRadius + 2, frame.size.height);
+                    CGPathMoveToPoint(path, nil, frame.size.width, BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS - 2);
+                    CGPathAddLineToPoint(path, nil, frame.size.width, frame.size.height - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2);
+                    CGPathMoveToPoint(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2, frame.size.height);
                     CGPathAddLineToPoint(path, nil, 0, frame.size.height);
                     CGPathAddLineToPoint(path, nil, 0, 0);
-                    CGPathAddLineToPoint(path, nil, frame.size.width - cornerRadius + 2, 0);
+                    CGPathAddLineToPoint(path, nil, frame.size.width - BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS + 2, 0);
                     CGContextSetLineWidth(ctx, 2.0);
                     CGContextAddPath(ctx, path);
                     CGContextStrokePath(ctx);
@@ -323,8 +326,12 @@ typedef enum __segmentType{
 @implementation BubbleIOSSegmentedControl
 
 @synthesize buttonArray             = _buttonArray;
+@synthesize numberOfSegments        = _numberOfSegments;
 @synthesize allowsMultipleSelection = _allowsMultipleSelection;
 @synthesize allowsNullSelection     = _allowsNullSelection;
+
+@synthesize autoSizingMode          = _autoSizingMode;
+
 @synthesize selectedSegmentIndex    = _selectedSegmentIndex;
 @synthesize tintColor               = _tintColor;
 
@@ -340,6 +347,9 @@ typedef enum __segmentType{
     _allowsMultipleSelection = NO;
     _allowsNullSelection     = YES;
     
+    _autoSizingMode          = SEGMENT_ALL_SEGMENTS_EQUAL;
+    
+    _numberOfSegments        = 0;
     _totalSelectedSegments   = 0;
 }
 
@@ -358,6 +368,219 @@ typedef enum __segmentType{
 - (id)initWithFrame:(CGRect)frame{
     if( self  = [super initWithFrame:frame] ) [self initializeSegmentedControlDefaults];
     return self;
+}
+
+#pragma mark -
+#pragma mark Get the Number of segments
+-(unsigned int)getNumberOfSegments{
+    return _buttonArray.count;
+}
+
+#pragma mark -
+#pragma mark Private Segment Resizing Helpers
+-(void)resizeSegmentsAllEqualHorizontal{
+    
+    // Lets make sure that we actually have an array of buttons to work with, and that the count of buttons is greater than 1
+    if( nil != _buttonArray && _buttonArray.count > 1 ){
+    
+        unsigned int autoSizedButtonWidth     = (int)self.frame.size.width;
+        unsigned int amountStaticSizedButtons = 0;
+        for(BubbleIOSSegmentButton * aButton in _buttonArray){
+            if( YES == aButton.isStaticSize ){
+                autoSizedButtonWidth -= aButton.frame.size.width;
+                amountStaticSizedButtons++;
+            }
+        }
+        
+        // If the amount of statically sized buttons is equal to the total amount of buttons, there is no work to do
+        if( amountStaticSizedButtons == _buttonArray.count ) return;
+        else{
+        
+            unsigned int excess     = autoSizedButtonWidth % ( _buttonArray.count - amountStaticSizedButtons );
+            autoSizedButtonWidth   /= ( _buttonArray.count - amountStaticSizedButtons );
+            unsigned int runningX   = 0;
+            
+            for(unsigned int buttonCount = 0; buttonCount < _buttonArray.count; buttonCount++){
+                
+                // Check to see if the button has been set to a static size
+                if( YES == ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).isStaticSize ){
+                    ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(0,
+                                                                                                             0,
+                                                                                                             ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame.size.width,
+                                                                                                             self.bounds.size.height);
+                    runningX += ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame.size.width;
+                }else{
+                
+                    // If the current button being re-sized is the leftmost or rightmost, add the excess pixels to those
+                    if      ( 0 == buttonCount ){
+                        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(0,
+                                                                                                                 0,
+                                                                                                                 autoSizedButtonWidth + (excess / 2) + (excess % 2),
+                                                                                                                 self.bounds.size.height);
+                        runningX += ( autoSizedButtonWidth + (excess / 2) + (excess % 2) );
+                    }else if( ( _buttonArray.count - 1 ) == buttonCount ){
+                        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1,
+                                                                                                                 0,
+                                                                                                                 autoSizedButtonWidth + 1 + (excess / 2),
+                                                                                                                 self.bounds.size.height);
+                        runningX += ( autoSizedButtonWidth + (excess / 2) );
+                    }else{
+                        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1,
+                                                                                                                 0,
+                                                                                                                 autoSizedButtonWidth + 1,
+                                                                                                                 self.bounds.size.height);
+                        runningX += autoSizedButtonWidth;
+                    } // END --> if( 0 == buttonCount )
+                
+                } // END --> if( YES == ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).isStaticSize )
+                
+            } // END --> for(unsigned int buttonCount = 0; buttonCount < buttonArray.count; buttonCount++) <--
+            
+            [self setNeedsDisplay];
+        
+        } // END --> if( amountStaticSizedButtons == _buttonArray.count )
+        
+    } // END --> if( nil != _buttonArray && _buttonArray.count > 1 )
+    
+} // END --> -(void)resizeSegmentsAllEqualHorizontal
+
+-(void)resizeSegmentsEqualBufferingHorizontal{
+    
+    // Lets make sure that we actually have an array of buttons to work with, and that the count of buttons is greater than 1
+    if( nil != _buttonArray && _buttonArray.count > 1 ){
+        
+        unsigned int autoSizedButtonWidth              = (int)self.frame.size.width;
+        unsigned int amountStaticSizedButtons          = 0;
+        unsigned int totalWidthOfNonStaticSizedContent = 0;
+        for(BubbleIOSSegmentButton * aButton in _buttonArray){
+            if( YES == aButton.isStaticSize ){
+                autoSizedButtonWidth -= aButton.frame.size.width;
+                amountStaticSizedButtons++;
+            }else{
+                totalWidthOfNonStaticSizedContent += (unsigned int)[[aButton attributedTitleForState:UIControlStateNormal] size].width;
+            }
+        }
+        
+        // If the amount of statically sized buttons is equal to the total amount of buttons, there is no work to do
+        if( amountStaticSizedButtons == _buttonArray.count ) return;
+        else{
+            
+            autoSizedButtonWidth   -= totalWidthOfNonStaticSizedContent;
+            unsigned int excess     = autoSizedButtonWidth % ( _buttonArray.count - amountStaticSizedButtons );
+            autoSizedButtonWidth   /= ( _buttonArray.count - amountStaticSizedButtons );
+            unsigned int runningX   = 0;
+            
+            for(unsigned int buttonCount = 0; buttonCount < _buttonArray.count; buttonCount++){
+                
+                // Check to see if the button has been set to a static size
+                if( YES == ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).isStaticSize ){
+                    ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(0,
+                                                                                                             0,
+                                                                                                             ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame.size.width,
+                                                                                                             self.bounds.size.height);
+                    runningX += ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame.size.width;
+                }else{
+                    
+                    // If the current button being re-sized is the leftmost or rightmost, add the excess pixels to those
+                    if      ( 0 == buttonCount ){
+                        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(0,
+                                                                                                                 0,
+                                                                                                                 autoSizedButtonWidth + (unsigned int)[[((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]) attributedTitleForState:UIControlStateNormal] size].width + (excess / 2) + (excess % 2),
+                                                                                                                 self.bounds.size.height);
+                        runningX += ( autoSizedButtonWidth + (unsigned int)[[((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]) attributedTitleForState:UIControlStateNormal] size].width + (excess / 2) + (excess % 2) );
+                    }else if( ( _buttonArray.count - 1 ) == buttonCount ){
+                        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1,
+                                                                                                                 0,
+                                                                                                                 autoSizedButtonWidth + (unsigned int)[[((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]) attributedTitleForState:UIControlStateNormal] size].width + 1 + (excess / 2),
+                                                                                                                 self.bounds.size.height);
+                        runningX += ( autoSizedButtonWidth + (unsigned int)[[((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]) attributedTitleForState:UIControlStateNormal] size].width + (excess / 2) );
+                    }else{
+                        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1,
+                                                                                                                 0,
+                                                                                                                 autoSizedButtonWidth + (unsigned int)[[((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]) attributedTitleForState:UIControlStateNormal] size].width + 1,
+                                                                                                                 self.bounds.size.height);
+                        runningX += ( autoSizedButtonWidth + (unsigned int)[[((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]) attributedTitleForState:UIControlStateNormal] size].width );
+                    } // END --> if( 0 == buttonCount )
+                    
+                } // END --> if( YES == ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).isStaticSize )
+                
+            } // END --> for(unsigned int buttonCount = 0; buttonCount < buttonArray.count; buttonCount++) <--
+            
+            [self setNeedsDisplay];
+            
+        } // END --> if( amountStaticSizedButtons == _buttonArray.count )
+        
+    } // END --> if( nil != _buttonArray && _buttonArray.count > 1 )
+    
+} // END -->-(void)resizeSegmentsEqualBufferingHorizontal
+
+#pragma mark - 
+#pragma mark Setting Segment Sizing
+-(SegmentAutoSizingMode)getAutoSizingMode{
+    return _autoSizingMode;
+}
+
+-(void)setAutoSizingMode:(SegmentAutoSizingMode)autoSizeMode{
+    
+    // Lets check to see if we are even changing the mode before we tell the display to update
+    if(autoSizeMode != _autoSizingMode && autoSizeMode <= SEGMENT_EQUAL_BUFFERING && nil != _buttonArray){
+        
+        _autoSizingMode = autoSizeMode;
+        switch(_autoSizingMode) {
+            case SEGMENT_EQUAL_BUFFERING:
+                [self resizeSegmentsEqualBufferingHorizontal];
+                break;
+            default:
+                [self resizeSegmentsAllEqualHorizontal];
+                break;
+        }
+        
+    }
+}
+
+-(void)setStaticSize:(unsigned int)size forSegment:(unsigned int)segment{
+    
+}
+
+-(void)setUseAutoSizingForSegment:(unsigned int)segment{
+    if( segment < _buttonArray.count && YES == ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isStaticSize ){
+        ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isStaticSize = NO;
+        
+        switch(_autoSizingMode) {
+            case SEGMENT_EQUAL_BUFFERING:
+                [self resizeSegmentsEqualBufferingHorizontal];
+                break;
+            default:
+                [self resizeSegmentsAllEqualHorizontal];
+                break;
+        }
+    }
+}
+
+-(void)setAllSegmentsUseAutoSizing{
+    
+}
+
+
+
+-(void)insertSegmentsWithNames:(NSArray *)namesArray atIndex:(int)segment{
+    
+}
+
+-(void)insertSegmentWithName:(NSString *)name atIndex:(int)segment{
+    
+}
+
+-(void)removeSegmentsWithNames:(NSArray *)names{
+    
+}
+
+-(void)removeSegmentByString:(NSString *)name{
+    
+}
+
+-(void)removeSegmentAtIndex:(unsigned int)segment{
+    
 }
 
 #pragma mark -
@@ -385,23 +608,23 @@ typedef enum __segmentType{
             }
         }
         
-        for(unsigned int index = 0; index < self.buttonArray.count; index++){
-            if( index == _selectedSegmentIndex ) [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:index]) setSelected:YES];
-            else                                 [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:index]) setSelected:NO];
+        for(unsigned int index = 0; index < _buttonArray.count; index++){
+            if( index == _selectedSegmentIndex ) [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:index]) setSelected:YES];
+            else                                 [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:index]) setSelected:NO];
         }
     }
 }
 
 -(void)selectSegment:(unsigned int)segment{
     if( _totalSelectedSegments < 1 ){
-        if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == NO ){
-            [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
+        if( segment < _buttonArray.count && ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isSelected == NO ){
+            [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setSelected:YES];
             _totalSelectedSegments = 1;
         }
     }else{
         if( YES == _allowsMultipleSelection )   // Only allow the NEW selection IFF we are in allow multiple selection mode
-            if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == NO ){
-                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
+            if( segment < _buttonArray.count && ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isSelected == NO ){
+                [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setSelected:YES];
                 _totalSelectedSegments++;
             }
     }
@@ -409,14 +632,14 @@ typedef enum __segmentType{
 
 -(void)deSelectSegment:(unsigned int)segment{
     if( _totalSelectedSegments > 1 ){
-        if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == YES ){
-            [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
+        if( segment < _buttonArray.count && ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isSelected == YES ){
+            [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setSelected:NO];
             _totalSelectedSegments--;
         }
     }else{
         if( YES == _allowsNullSelection ){
-            if( segment < self.buttonArray.count && ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected == YES ){
-                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
+            if( segment < _buttonArray.count && ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isSelected == YES ){
+                [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setSelected:NO];
                 _totalSelectedSegments--;
             }
         }
@@ -428,7 +651,7 @@ typedef enum __segmentType{
     else                                  _totalSelectedSegments = 1;
     
     for(unsigned short segment = 0; segment < _totalSelectedSegments; segment++)
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:YES];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setSelected:YES];
 }
 
 -(void)deselectAllSegments{
@@ -436,14 +659,14 @@ typedef enum __segmentType{
     else                              _totalSelectedSegments = 1;
     
     for(unsigned short segment = _totalSelectedSegments; segment < _buttonArray.count; segment++)
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setSelected:NO];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setSelected:NO];
 }
 
 -(void)emulateTouchOnSegment:(unsigned int)segment{
     
     // Ensure the user is asking to emulate a touch on a segment that exists
     if( segment < _buttonArray.count ){
-        if( NO == ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected ) [self selectSegment:  segment];
+        if( NO == ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isSelected ) [self selectSegment:  segment];
         else                                                                                         [self deSelectSegment:segment];
     }// END --> if(segment < buttonArray.count)
     
@@ -455,7 +678,7 @@ typedef enum __segmentType{
     
     if( nil != namesArray && namesArray.count > 0){
         
-        self.buttonArray = [NSMutableArray array];
+        _buttonArray = [NSMutableArray array];
         
         for(NSString * string in namesArray){
             if( [string isKindOfClass:[NSString class]] ){
@@ -491,37 +714,46 @@ typedef enum __segmentType{
                 title = [[NSMutableAttributedString alloc] initWithString:string attributes:attrDictSelHigh];
                 [newButton setAttributedTitle:title forState:UIControlStateSelected | UIControlStateHighlighted];
                 
-                [newButton setSelected: NO];
-                newButton.autoCalculateWidth = YES;
-                [newButton setSegmentType:SEGMENT_MIDDLE];
+                newButton.isSelected   = NO;
+                newButton.isStaticSize = NO;
+                newButton.segmentType  = SEGMENT_MIDDLE;
                 [newButton addTarget:self
                               action:@selector(buttonAction:)
                     forControlEvents:(UIControlEvents)UIControlEventTouchUpInside];
-                [self.buttonArray addObject:newButton];
+                [_buttonArray addObject:newButton];
             }
         }
         
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:0]) setSegmentType:SEGMENT_LEFT];
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:(self.buttonArray.count - 1)]) setSegmentType:SEGMENT_RIGHT];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:0]) setSegmentType:SEGMENT_LEFT];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:(_buttonArray.count - 1)]) setSegmentType:SEGMENT_RIGHT];
         
-        unsigned int mainButtonWidth = (int)self.frame.size.width / self.buttonArray.count;
-        unsigned int excess          = (int)self.frame.size.width % self.buttonArray.count;
+        unsigned int mainButtonWidth = (int)self.frame.size.width / _buttonArray.count;
+        unsigned int excess          = (int)self.frame.size.width % _buttonArray.count;
         unsigned int runningX        = 0;
         
-        for(unsigned int buttonCount = 0; buttonCount < self.buttonArray.count; buttonCount++){
+        for(unsigned int buttonCount = 0; buttonCount < _buttonArray.count; buttonCount++){
             
             if      ( 0 == buttonCount ){
-                ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(0, 0, mainButtonWidth + (excess / 2) + (excess % 2), self.bounds.size.height);
+                ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(0,
+                                                                                                         0,
+                                                                                                         mainButtonWidth + (excess / 2) + (excess % 2),
+                                                                                                         self.bounds.size.height);
                 runningX += ( mainButtonWidth + (excess / 2) + (excess % 2) );
-            }else if( ( self.buttonArray.count - 1 ) == buttonCount){
-                ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1, 0, mainButtonWidth + 1 + (excess / 2), self.bounds.size.height);
-                runningX += (mainButtonWidth + (excess / 2) );
+            }else if( ( _buttonArray.count - 1 ) == buttonCount){
+                ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1,
+                                                                                                         0,
+                                                                                                         mainButtonWidth + 1 + (excess / 2),
+                                                                                                         self.bounds.size.height);
+                runningX += ( mainButtonWidth + (excess / 2) );
             }else{
-                ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1, 0, mainButtonWidth + 1, self.bounds.size.height);
+                ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount]).frame = CGRectMake(runningX - 1,
+                                                                                                         0,
+                                                                                                         mainButtonWidth + 1,
+                                                                                                         self.bounds.size.height);
                 runningX += mainButtonWidth;
             }
             
-            [self addSubview:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:buttonCount])];
+            [self addSubview:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:buttonCount])];
             
         } // END --> for(unsigned int buttonCount = 0; buttonCount < buttonArray.count; buttonCount++) <--
         
@@ -531,30 +763,12 @@ typedef enum __segmentType{
     
 } // END --> -(void)initWithNamesArray:(NSArray *)namesArray
 
+-(void)setupWithParamsDictionary:(NSDictionary *)paramsDict{
+    
+}
+
 -(void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection{
     _allowsMultipleSelection = allowsMultipleSelection;
-}
-
-
--(void)insertSegments:(NSArray *)namesArray atIndex:(int)segment{
-    
-}
-
--(void)insertSegment:(NSString *)name after:(int)segment{
-    
-}
-
-
--(void)removeSegmentsWithNames:(NSArray *)names{
-    
-}
-
--(void)removeSegmentByString:(NSString *)name{
-    
-}
-
--(void)removeSegmentAtIndex:(unsigned int)segment{
-    
 }
 
 #pragma mark -
@@ -568,60 +782,53 @@ typedef enum __segmentType{
 }
 
 -(BOOL)isSegmentSelected:(unsigned int)segment{
-    if( segment < self.buttonArray.count ) return ((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).isSelected;
+    if( segment < _buttonArray.count ) return ((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).isSelected;
     else                                   return NO;
 }
 
 
 -(void)underlineFirstOccuranceOfChar:(char)inChar forSegment:(unsigned int)segment{
     
-    if(segment < self.buttonArray.count){
+    if(segment < _buttonArray.count){
         
         // Setup the initial attributed string for the "" Label
-        NSDictionary * attrDictNorm    = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.font,
+        NSDictionary * attrDictNorm    = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.font,
                                            NSForegroundColorAttributeName:self.tintColor};
         
-        NSDictionary * attrDictHigh    = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.font,
+        NSDictionary * attrDictHigh    = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.font,
                                            NSForegroundColorAttributeName:self.tintColor};
         
-        NSDictionary * attrDictSel     = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.font,
+        NSDictionary * attrDictSel     = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.font,
                                            NSForegroundColorAttributeName:[UIColor clearColor]};
         
-        NSDictionary * attrDictSelHigh = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.font,
+        NSDictionary * attrDictSelHigh = @{NSFontAttributeName:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.font,
                                            NSForegroundColorAttributeName:[UIColor clearColor]};
         
         // Make the first occurance of " underlined for the "Visible Light Limits" Label
-        NSMutableAttributedString * title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictNorm];
+        NSMutableAttributedString * title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictNorm];
         
         NSRange charRange = [[title string] rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:[NSString stringWithFormat:@"%c", inChar]]];
         [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:charRange];
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateNormal];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateNormal];
         
         
-        title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictHigh];
+        title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictHigh];
         [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:charRange];
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateHighlighted];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateHighlighted];
         
-        title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictSel];
+        title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictSel];
         [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:charRange];
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateSelected];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateSelected];
         
-        title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictSelHigh];
+        title = [[NSMutableAttributedString alloc] initWithString:((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]).titleLabel.text attributes:attrDictSelHigh];
         [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:charRange];
-        [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateSelected | UIControlStateHighlighted];
+        [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:segment]) setAttributedTitle:title forState:UIControlStateSelected | UIControlStateHighlighted];
         
-    } // END --> if(segment < self.buttonArray.count)
+    } // END --> if(segment < _buttonArray.count)
     
     [self setNeedsDisplay];
     
 }
-
-
--(void)setStaticWidth:(unsigned int)width forSegment:(unsigned int)segment{
-    
-    
-    
-} // END --> -(void)setStaticWidth:(unsigned int)width forSegment:(unsigned int)segment
 
 
 /*
@@ -630,22 +837,22 @@ typedef enum __segmentType{
 -(void)buttonAction:(id)sender{
     
     if( YES == self.allowsMultipleSelection ){
-        for(unsigned int i = 0; i < self.buttonArray.count; i++){
-            if( sender == [self.buttonArray objectAtIndex:i] ){
+        for(unsigned int i = 0; i < _buttonArray.count; i++){
+            if( sender == [_buttonArray objectAtIndex:i] ){
                 //NSLog(@"User touched index %i", i);
-                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:i]) setSelected:![((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:i]) isSelected]];
+                [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:i]) setSelected:![((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:i]) isSelected]];
             }
-        } // END --> for(unsigned int i = 0; i < self.buttonArray.count; i++) <--
+        } // END --> for(unsigned int i = 0; i < _buttonArray.count; i++) <--
     }else{
-        for(unsigned int i = 0; i < self.buttonArray.count; i++){
-            if( sender == [self.buttonArray objectAtIndex:i] ){
+        for(unsigned int i = 0; i < _buttonArray.count; i++){
+            if( sender == [_buttonArray objectAtIndex:i] ){
                 //NSLog(@"User touched index %i", i);
-                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:i]) setSelected:YES];
+                [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:i]) setSelected:YES];
                 _selectedSegmentIndex = i;
             }else{
-                [((BubbleIOSSegmentButton  *)[self.buttonArray objectAtIndex:i]) setSelected:NO];
+                [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:i]) setSelected:NO];
             }
-        } // END --> for(unsigned int i = 0; i < self.buttonArray.count; i++) <--
+        } // END --> for(unsigned int i = 0; i < _buttonArray.count; i++) <--
     } // if( YES == allowsMultipleSelection ) <--
     
     // Fire the action to the above caller
@@ -654,9 +861,3 @@ typedef enum __segmentType{
 }
 
 @end
-
-
-
-
-
-
