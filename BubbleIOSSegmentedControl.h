@@ -49,6 +49,7 @@ typedef enum __SegmentAutoSizingMode{
 @property (nonatomic, retain) UIColor * unSelectedOutlineColor;
 @property (nonatomic, retain) UIColor * selectedOutlineColor;
 
+-(void)setupWithSpaceForN:(unsigned int)segments;
 -(void)setupWithNamesArray:(NSArray *)namesArray;
 -(void)setupWithParamsDictionary:(NSDictionary *)paramsDict;
 
