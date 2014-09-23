@@ -674,6 +674,32 @@ typedef enum __BubbleIOButtonSegmentType{
 
 #pragma mark -
 #pragma mark BubbleIOSSegmentedControl Segment Setup Routines
+-(void)setupWithSpaceForN:(unsigned int)segments{
+    
+    // If array exists already, clear it, if not, create it
+    if( nil != _buttonArray ) [_buttonArray removeAllObjects];
+    else                      _buttonArray = [NSMutableArray array];
+    
+    // Create the buttons, and add them to the button array
+    for(unsigned int i = 0; i < segments; i++){
+        BubbleIOSSegmentButton  * newButton = [BubbleIOSSegmentButton  buttonWithType:UIButtonTypeCustom];
+        newButton.backgroundColor           = self.backgroundColor;
+        newButton.tintColor                 = [_tintColor copy];
+        newButton.isSelected                = NO;
+        newButton.isStaticSize              = NO;
+        newButton.segmentType               = SEGMENT_MIDDLE;
+        
+        [newButton addTarget:self
+                      action:@selector(buttonAction:)
+            forControlEvents:(UIControlEvents)UIControlEventTouchUpInside];
+        [_buttonArray addObject:newButton];
+    }
+    
+    [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:0]) setSegmentType:SEGMENT_LEFT];
+    [((BubbleIOSSegmentButton  *)[_buttonArray objectAtIndex:(_buttonArray.count - 1)]) setSegmentType:SEGMENT_RIGHT];
+    
+}
+
 -(void)setupWithNamesArray:(NSArray *)namesArray{
     
     if( nil != namesArray && namesArray.count > 0){
