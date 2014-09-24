@@ -10,7 +10,7 @@
 
 #pragma mark -
 #pragma mark Custom Macro Constants
-#define MODULE_REVISION_STRING                  @"1.0.03"
+#define MODULE_REVISION_STRING                  @"1.0.04"
 
 #define BUBBLEIOSSEGMENTEDCONTROL_CORNER_RADIUS 6.0
 
