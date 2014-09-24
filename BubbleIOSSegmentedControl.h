@@ -49,14 +49,14 @@ typedef enum __SegmentAutoSizingMode{
 @property (nonatomic, retain, setter=setTintColor:, getter=getTintColor) UIColor *             tintColor;
 
 // These colors when set, can change the appearance of all segments for the particular parameter
-@property (nonatomic, retain)                                            UIColor *             unselectedOutlineColor;
-@property (nonatomic, retain)                                            UIColor *             selectedOutlineColor;
+@property (nonatomic, retain, setter=setUnselectedOutlineColor:)         UIColor *             unselectedOutlineColor;
+@property (nonatomic, retain, setter=setSelectedOutlineColor:)           UIColor *             selectedOutlineColor;
 
-@property (nonatomic, retain)                                            UIColor *             unselectedFillColor;
-@property (nonatomic, retain)                                            UIColor *             selectedFillColor;
+@property (nonatomic, retain, setter=setUnselectedFillColor:)            UIColor *             unselectedFillColor;
+@property (nonatomic, retain, setter=setSelectedFillColor:)              UIColor *             selectedFillColor;
 
-@property (nonatomic, retain)                                            UIColor *             unselectedFontColor;
-@property (nonatomic, retain)                                            UIColor *             selectedFontColor;
+@property (nonatomic, retain, setter=setUnselectedFontColor:)            UIColor *             unselectedFontColor;
+@property (nonatomic, retain, setter=setSelectedFontColor:)              UIColor *             selectedFontColor;
 
 
 /**************************************************************************************************************************
@@ -69,7 +69,6 @@ typedef enum __SegmentAutoSizingMode{
 /**************************************************************************************************************************
  * Post setup parameter modification
  **************************************************************************************************************************/
--(void)setAutoSizingMode:(SegmentAutoSizingMode)autoSizeMode;               // This routine will NOT reset any statically sized segments the user has set
 -(void)setStaticSize:(unsigned int)size forSegment:(unsigned int)segment;   // This allows the user to set a static size for particular segments
 -(void)setUseAutoSizingForSegment:(unsigned int)segment;                    // Essentially resets any static sizing of a segment and forces the segment to use the current auto sizing mode
 -(void)setAllSegmentsUseAutoSizing;                                         // Resets all segments to use the current auto sizing mode
