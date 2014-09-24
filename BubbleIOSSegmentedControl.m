@@ -37,13 +37,28 @@ typedef enum __BubbleIOButtonSegmentType{
 @interface BubbleIOSSegmentButton : UIButton
 
 //@property (nonatomic) BOOL isSelected;
-@property (getter = getSegmentType, setter = setSegmentType:) BubbleIOButtonSegmentType segmentType;
-@property (nonatomic)                                         BOOL                      isStaticSize;
-@property (nonatomic, retain)                                 UIColor *                 tintColor;
+@property (getter=getSegmentType, setter=setSegmentType:) BubbleIOButtonSegmentType segmentType;
+@property (nonatomic)                                     BOOL                      isStaticSize;
+
+// If this property is set, it will automatically set all other colors to it as the blanket color
+@property (nonatomic, retain, setter=setTintColor:)       UIColor *                 tintColor;
+
+// These colors when set, can change the appearance of all segments for the particular parameter
+@property (nonatomic, retain)                             UIColor *                 unselectedOutlineColor;
+@property (nonatomic, retain)                             UIColor *                 selectedOutlineColor;
+
+@property (nonatomic, retain)                             UIColor *                 unselectedFillColor;
+@property (nonatomic, retain)                             UIColor *                 selectedFillColor;
+
+@property (nonatomic, retain)                             UIColor *                 unselectedFontColor;
+@property (nonatomic, retain)                             UIColor *                 selectedFontColor;
+
+
 
 //
 -(BubbleIOButtonSegmentType)getSegmentType;
 -(void)setSegmentType:(BubbleIOButtonSegmentType)segmentType;
+-(void)setSegmentColorsWithUSOC:(UIColor *)USOC SOC:(UIColor *)SOC USFC:(UIColor *)USFC SFC:(UIColor *)SFC USFoC:(UIColor *)USFoC SFoC:(UIColor *)SFoC;
 
 @end
 
@@ -54,19 +69,28 @@ typedef enum __BubbleIOButtonSegmentType{
 #pragma mark BubbleIOSSegmentButton Implementation
 @implementation BubbleIOSSegmentButton
 
-@synthesize segmentType  = _segmentType;
-@synthesize isStaticSize = _isStaticSize;
-@synthesize tintColor    = _tintColor;
+@synthesize segmentType            = _segmentType;
+@synthesize isStaticSize           = _isStaticSize;
+
+@synthesize tintColor              = _tintColor;
+
+@synthesize unselectedOutlineColor = _unselectedOutlineColor;
+@synthesize selectedOutlineColor   = _selectedOutlineColor;
+
+@synthesize unselectedFillColor    = _unselectedFillColor;
+@synthesize selectedFillColor      = _selectedFillColor;
+
+@synthesize unselectedFontColor    = _unselectedFontColor;
+@synthesize selectedFontColor      = _selectedFontColor;
 
 #pragma mark -
 #pragma mark BubbleIOSSegmentButton Custom Initilization
 -(void)initializeSegmentButton{
-    self.opaque = NO;
+    self.opaque          = NO;
     self.backgroundColor = [UIColor clearColor];
+    _segmentType         = SEGMENT_LEFT;
+    _isStaticSize        = NO;
     [self setSelected:NO];
-    
-    _segmentType = SEGMENT_LEFT;
-    _isStaticSize = NO;
 }
 
 #pragma mark -
@@ -90,6 +114,66 @@ typedef enum __BubbleIOButtonSegmentType{
 #pragma mark BubbleIOSegmentButton Overridden routine for setting the button selected
 -(void)setIsSelected:(BOOL)isSelected{
     [self setSelected:isSelected];
+}
+
+#pragma mark -
+#pragma mark Custom Getter and Setter routines
+-(void)setTintColor:(UIColor *)tintColor{
+    _tintColor              = tintColor;
+    
+    _unselectedOutlineColor = _tintColor;
+    _selectedOutlineColor   = _tintColor;
+    
+    _unselectedFillColor    = _tintColor;
+    _selectedFillColor      = _tintColor;
+    
+    _unselectedFontColor    = _tintColor;
+    _selectedFontColor      = _tintColor;
+    
+    [self setNeedsDisplay];
+}
+
+-(void)setUnselectedOutlineColor:(UIColor *)unselectedOutlineColor{
+    _unselectedOutlineColor = unselectedOutlineColor;
+    [self setNeedsDisplay];
+}
+
+-(void)setSelectedOutlineColor:(UIColor *)selectedOutlineColor{
+    _selectedOutlineColor = selectedOutlineColor;
+    [self setNeedsDisplay];
+}
+
+-(void)setUnselectedFillColor:(UIColor *)unselectedFillColor{
+    _unselectedFillColor = unselectedFillColor;
+    [self setNeedsDisplay];
+}
+
+-(void)setSelectedFillColor:(UIColor *)selectedFillColor{
+    _selectedFillColor = selectedFillColor;
+    [self setNeedsDisplay];
+}
+
+-(void)setUnselectedFontColor:(UIColor *)unselectedFontColor{
+    _unselectedFontColor = unselectedFontColor;
+    [self setNeedsDisplay];
+}
+
+-(void)setSelectedFontColor:(UIColor *)selectedFontColor{
+    _selectedFontColor = selectedFontColor;
+    [self setNeedsDisplay];
+}
+
+-(void)setSegmentColorsWithUSOC:(UIColor *)USOC SOC:(UIColor *)SOC USFC:(UIColor *)USFC SFC:(UIColor *)SFC USFoC:(UIColor *)USFoC SFoC:(UIColor *)SFoC{
+    _unselectedOutlineColor = USOC;
+    _selectedOutlineColor   = SOC;
+    
+    _unselectedFillColor    = USFC;
+    _selectedFillColor      = SFC;
+    
+    _unselectedFontColor    = USFoC;
+    _selectedFontColor      = SFoC;
+    
+    [self setNeedsDisplay];
 }
 
 #pragma mark - 
@@ -325,16 +409,27 @@ typedef enum __BubbleIOButtonSegmentType{
 #pragma mark BubbleIOSSegmentedControl Implementation
 @implementation BubbleIOSSegmentedControl
 
+// Public Properties
 @synthesize buttonArray             = _buttonArray;
 @synthesize numberOfSegments        = _numberOfSegments;
+@synthesize selectedSegmentIndex    = _selectedSegmentIndex;
 @synthesize allowsMultipleSelection = _allowsMultipleSelection;
 @synthesize allowsNullSelection     = _allowsNullSelection;
 
 @synthesize autoSizingMode          = _autoSizingMode;
 
-@synthesize selectedSegmentIndex    = _selectedSegmentIndex;
 @synthesize tintColor               = _tintColor;
 
+@synthesize unselectedOutlineColor  = _unselectedOutlineColor;
+@synthesize selectedOutlineColor    = _selectedOutlineColor;
+
+@synthesize unselectedFillColor     = _unselectedFillColor;
+@synthesize selectedFillColor       = _selectedFillColor;
+
+@synthesize unselectedFontColor     = _unselectedFontColor;
+@synthesize selectedFontColor       = _selectedFontColor;
+
+// Private Properties
 @synthesize totalSelectedSegments   = _totalSelectedSegments;
 
 #pragma mark -
@@ -371,9 +466,30 @@ typedef enum __BubbleIOButtonSegmentType{
 }
 
 #pragma mark -
-#pragma mark Get the Number of segments
+#pragma mark Custom Getters and Setters for Control Properties
 -(unsigned int)getNumberOfSegments{
     return _buttonArray.count;
+}
+
+-(void)setTintColor:(UIColor *)tintColor{
+    _tintColor = tintColor;
+    
+    _unselectedOutlineColor = _tintColor;
+    _selectedOutlineColor   = _tintColor;
+    
+    _unselectedFillColor    = _tintColor;
+    _selectedFillColor      = _tintColor;
+    
+    _unselectedFontColor    = _tintColor;
+    _selectedFontColor      = _tintColor;
+    
+    for(BubbleIOSSegmentButton * aButton in _buttonArray) aButton.tintColor = _tintColor;
+    
+    [self setNeedsDisplay];
+}
+
+-(UIColor *)getTintColor{
+    return _tintColor;
 }
 
 #pragma mark -
